@@ -23,6 +23,7 @@ var io = socketio.listen(server);
 router.use(express.static(path.resolve(__dirname, 'client')));
 var messages = [];
 var sockets = [];
+var searches = [];
 
 io.on('connection', function (socket) {
     messages.forEach(function (data) {
@@ -50,6 +51,23 @@ io.on('connection', function (socket) {
 
         broadcast('message', data);
         messages.push(data);
+      });
+    });
+    
+    socket.on('search', function (sch) {
+      var text = String(sch || '');
+
+      if (!text)
+        return;
+
+      socket.get('name', function (err, name) {
+        var data = {
+          name: name,
+          text: text
+        };
+
+        broadcast('search', data);
+        searches.push(data);
       });
     });
 

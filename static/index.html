@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en" ng-app>
   <head>
-    <title>Chat Example</title>
+    <title>Chit Chat</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/bootstrap-responsive.min.css">
@@ -45,7 +45,8 @@ if(showhide == "show"){
         $scope.roster = [];
         $scope.name = '';
         $scope.text = '';
-
+        $scope.searches = [];
+        
         socket.on('connect', function () {
           console.log('connected');
           $scope.setName();
@@ -57,8 +58,14 @@ if(showhide == "show"){
           $scope.$apply();
         });
 
+        socket.on('search', function (sch) {
+          console.log(sch);
+          $scope.searches.push(sch);
+          $scope.$apply();
+        });
+        
         socket.on('roster', function (names) {
-          console.log("Roster update:" +JSON.stringify(names))
+          console.log("Roster update:" +JSON.stringify(names));
           $scope.roster = names;
           $scope.$apply();
         });
@@ -66,6 +73,12 @@ if(showhide == "show"){
         $scope.send = function send() {
           console.log('Sending message:', $scope.text);
           socket.emit('message', $scope.text);
+          $scope.text = '';
+        };
+        
+        $scope.search = function search() {
+          console.log('Searching message:', $scope.text);
+          socket.emit('search', $scope.text);
           $scope.text = '';
         };
 
@@ -130,7 +143,7 @@ if(showhide == "show"){
         </div>
       </div>
       <div class="page-header">
-        <h1>Chat Example</h1>
+        <h1>Chit Chat</h1>
       </div>
       <div class="row">
         <div class="span3">
@@ -165,6 +178,29 @@ if(showhide == "show"){
               </div>
             </form>
           </div>
+          <div class="row controls">
+            <form ng-submit="search()">
+              <div class="span2"><input type="text" class="input-block-level" readonly="readonly" placeholder="Search"></div>
+              <div class="input-append span7">
+                <input type="text" class="span6" ng-model="text" placeholder="Search word">
+                <input type="submit" class="span1 btn btn-primary" value="Send" ng-disabled="!text">
+              </div>
+            </form>
+          </div>
+          <table class="table table-striped table-bordered">
+            <thead>
+              <tr>
+                <th class="span2">username</th>
+                <th class="span7">search</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="sch in searches">
+                <td class="span2" ng-bind="sch.name"></td>
+                <td class="span7" ng-bind="sch.text"></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
